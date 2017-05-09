@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Canvas Chatting System</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script type="text/javascript" src="http://cdn.socket.io/socket.io-1.4.0.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="sketch.min.js"></script>
+<style>
+body {
+  background: white;
+  font: 14px "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+blockquote {
+  margin: 0 auto;
+  max-width: 320px;
+}
+p {
+  margin: 0 0 0.5em;
+  border-radius: 1em;
+  padding: 0.5em 1em;
+  background: #e5e5ea;
+  max-width: 75%;
+  clear: both;
+  position: relative;
+}
+p.them {
+  float: left;
+}
+p.them::after {
+  content: "";
+  position: absolute;
+  left: -0.5em;
+  bottom: 0;
+  width: 0.5em;
+  height: 1em;
+  border-right: 0.5em solid #e5e5ea;
+  border-bottom-right-radius: 1em 0.5em;
+}
+p.me {
+  float: right;
+  background-color: #1289fe;
+  color: white;
+}
+p.me::after {
+  content: "";
+  position: absolute;
+  right: -0.5em;
+  bottom: 0;
+  width: 0.5em;
+  height: 1em;
+  border-left: 0.5em solid #1289fe;
+  border-bottom-left-radius: 1em 0.5em;
+}
+</style>
+<style>
+.j-message {
+			margin-bottom:50px;
+        }
+.j-footer {
+            width: 100%;
+			position: fixed;
+            bottom: 0;
+            background-color:white;
+			border-top:1px solid black;
+        }
+</style>
+</head>
+<body>
+<script>
+
+    var serverURL = 'localhost:50000';
+
+    var name = 'me';
+    var room = '100';
+
+    var socket = null;
+
+    function writeMessage(type, name, message) {
+        var html = '<p class="me">{MESSAGE}<img src="{IMAGE}"/></p>';
+
+        var printName = '';
+        if(type === 'me') {
+            printName = name;
+        }
+
+        html = html.replace('{MESSAGE}', printName);
+		html = html.replace('{IMAGE}', message);
+
+        $(html).appendTo('.j-message');
+        $('body').stop();
+        $('body').animate({scrollTop:$(document).height()}, 500);
+
+    }
+
+    function sender(text) {
+
+        socket.emit('user', {
+            name : name,
+            message : text
+        });
+
+        writeMessage('me', name, text);
+    }
+
+    $(document).ready(function() {
+
+        socket = io.connect(serverURL);
+
+        socket.on('connection', function(data) {
+            console.log('connect');
+            if(data.type === 'connected') {
+                socket.emit('connection', {
+                    type : 'join',
+                    name : name,
+                    room : room
+                });
+            }
+        });
+
+        socket.on('system', function(data) {
+            writeMessage('system', 'system', data.message);
+        });
+
+        socket.on('message', function(data) {
+            writeMessage('other', data.name, data.message);
+        });
+
+        $('#message-button').click(function() {
+
+            var msg = canvas.toDataURL();
+			context.clearRect(0, 0, canvas.width, canvas.height);
+            sender(msg);
+            $input.val('');
+            $input.focus();
+
+
+        });
+
+    });
+
+</script>
+<div class="j-message">
+</div>
+<div class="j-footer">
+<script type="text/javascript">
+    if(window.addEventListener)
+    {
+        window.addEventListener('load', InitEvent, false);
+    }
+ 
+    var canvas, context, tool;
+       
+    function InitEvent ()
+    {
+        canvas = document.getElementById('simple_sketch');
+        if (!canvas) {
+          alert('캔버스 객체를 찾을 수 없음');
+          return;
+        }
+ 
+        if (!canvas.getContext) {
+          alert('Drawing Contextf를 찾을 수 없음');
+          return;
+        }
+ 
+        context = canvas.getContext('2d');
+        if (!context) {
+          alert('getContext() 함수를 호출 할 수 없음');
+          return;
+        }
+    }
+       
+    function tool_pencil () {
+
+        var tool = this;
+        this.started = false;
+
+        this.mouseup = function (ev)
+        {
+          if (tool.started)
+          {
+                tool.mousemove(ev);
+                tool.started = false;
+          }
+        };
+    }
+</script>
+<canvas width="400" height="300" id="simple_sketch" style=" position: relative; border: 1px solid #000;"></canvas>
+<script>
+  $(function() {
+    $('#simple_sketch').sketch();
+  });
+</script>
+<button id="message-button" class="btn btn-default" type="submit">SEND</button>
+</div>
+</body>
+</html>
