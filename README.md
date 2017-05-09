@@ -1,5 +1,8 @@
 # nodejs-socket.io-chat-example
-this is chat example using nodejs with socket.io
+
+애플 워치의 Digital Touch 기능을 폰에서 구현한 채팅 시스템입니다.
+서버 기능에는 node.js와 socket.io을,
+스케치 기능에는 sketch.js를 사용하였습니다.
 
 # how to run
 
