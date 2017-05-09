@@ -1,4 +1,4 @@
-# nodejs-socket.io-chat-example
+# image-free-chat
 
 애플 워치의 Digital Touch 기능을 폰에서 구현한 채팅 시스템입니다.
 서버 기능에는 node.js와 socket.io을,
